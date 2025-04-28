@@ -1,4 +1,3 @@
-<!-- UserMapper.xml -->
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper
         PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
@@ -8,7 +7,7 @@
         <id property="id" column="id"/>
         <result property="name" column="name"/>
     </resultMap>
-    <select id="getAllUsers" resultMap="userResultMap">
+    <select id="getAllUsers1" resultMap="userResultMap">
         SELECT id, name FROM user
     </select>
 </mapper>
