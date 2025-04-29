@@ -1,22 +1,15 @@
 package com.example.demo.model.dto;
 
-public class UserDto {
-    private Integer id;
-    private String name;
+import lombok.Data;
 
-    public Integer getId() {
-        return id;
-    }
+/**
+ * User data transfer object (DTO)
+ * User DTO
+ */
+@Data
+public class UserDto extends BaseDto{
+    private Long userId;
+    private String userName;
+    private String password;
 
-    public void setId(Integer id) {
-        this.id = id;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
 }

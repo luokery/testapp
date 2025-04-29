@@ -1,18 +1,35 @@
 package com.example.demo.model.entity;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 
+/**
+ * User entity class
+ */
 @Data
+@EqualsAndHashCode(callSuper = true)
 @Entity
-@Table(name = "user")
-public class UserEntity {
+@Table(name = "TBL_users")
+public class UserEntity extends BaseEntity {
+
+    /**
+     * Primary key, not auto-incremented, for application logic usage
+     */
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer id;
-    private String name;
+    @Column(name = "user_id", columnDefinition = "用户id，主键")
+    private Long userId;
+
+    /**
+     * User name
+     */
+    @Column(name = "user_name", columnDefinition = "用户名")
+    private String userName;
+
+    /**
+     * password
+     */
+    @Column(name = "password", columnDefinition = "密码")
+    private String password;
+
 }

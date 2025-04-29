@@ -8,10 +8,13 @@ spring:
     username: sa
     password: ''
     driver-class-name: org.h2.Driver
+  sql:
+    init:
+      mode: always
+      schema-locations: classpath:db/schema.sql
   jpa:
     hibernate:
-      # updata none
-      ddl-auto: update
+      ddl-auto: none
     show-sql: true
 
 mybatis:
