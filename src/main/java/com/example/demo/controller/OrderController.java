@@ -1,44 +1,47 @@
 package com.example.demo.controller;
-import com.example.demo.model.dto.UserDto;
+
 import com.example.demo.model.dto.OrderDto;
 import com.example.demo.model.dto.PageInfoDto;
 import com.example.demo.model.vo.PageInfo;
+import com.example.demo.model.vo.OrderVo;
+import com.example.demo.mapstruct.OrderMapStruct;
 import com.example.demo.service.api.OrderService;
 import org.springframework.beans.factory.annotation.Autowired;
 import lombok.extern.slf4j.Slf4j;
 import jakarta.validation.Valid;
 import org.springframework.validation.BindingResult;
-import org.springframework.validation.FieldError;
-import org.springframework.web.bind.MethodArgumentNotValidException;
-import org.springframework.web.bind.annotation.ExceptionHandler;
+
 import org.springframework.validation.annotation.Validated;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import java.util.HashMap;
 import org.springframework.web.bind.annotation.*;
 import java.util.Map;
+
 import java.math.BigDecimal;
 import java.util.List;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 
 @Slf4j
 @RestController
 @RequestMapping("/orders")
+@Validated
 public class OrderController {
+
+    @Autowired
+    private OrderMapStruct orderMapStruct;
 
     @Autowired
     private OrderService orderService;
 
-    @PostMapping
-    public ResponseEntity<?> createOrder(
-            @RequestParam String userId,
-            @RequestParam BigDecimal totalPrice,
-            @Valid
-            @RequestParam String orderStatus) {
-        log.info("createOrder with userId:{}, totalPrice:{}, orderStatus:{}", userId, totalPrice, orderStatus);
-        OrderDto orderDto = orderService.createOrder(userId, totalPrice, orderStatus);
-        return new ResponseEntity<>(orderDto, HttpStatus.CREATED);
-    }
 
+    @PostMapping
+    public ResponseEntity<OrderVo> createOrder(@Validated @RequestBody OrderVo orderVo, BindingResult result) {
+        if (result.hasErrors()) {
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
+        OrderDto orderDto = orderService.createOrder(orderVo.getUserId(), orderVo.getTotalPrice(), orderVo.getOrderStatus());
+        return new ResponseEntity<>(orderMapStruct.orderDtoToOrderVo(orderDto), HttpStatus.CREATED);
+    }
     @GetMapping
     public ResponseEntity<List<OrderDto>> getAll() {
         List<OrderDto> orders = orderService.getAll();
@@ -46,51 +49,60 @@ public class OrderController {
         return new ResponseEntity<>(orders, HttpStatus.OK);
     }
 
+
     @GetMapping("/{orderId}")
-    public ResponseEntity<OrderDto> getById(@PathVariable String orderId) {
+    public ResponseEntity<OrderVo> getById(@PathVariable String orderId) {
         OrderDto orderDto = orderService.getById(orderId);
         log.info("get order by id: {}", orderId);
         if (orderDto == null) {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
-        return new ResponseEntity<>(orderDto, HttpStatus.OK);
+        return new ResponseEntity<>(orderMapStruct.orderDtoToOrderVo(orderDto), HttpStatus.OK);
     }
 
     @GetMapping("/user/{userId}")
-    public ResponseEntity<List<OrderDto>> getOrdersByUserId(@PathVariable String userId) {
+    public List<OrderVo> getOrdersByUserId(@PathVariable String userId) {
         log.info("getOrdersByUserId: {}", userId);
         List<OrderDto> orders = orderService.getOrdersByUserId(userId);
-        return new ResponseEntity<>(orders, HttpStatus.OK);
+        return orderMapStruct.orderDtoListToOrderVoList(orders);
     }
 
+
     @GetMapping("/page")
-    public PageInfo<OrderDto> getAllOrdersWithPagination(@Validated @ModelAttribute PageInfoDto<OrderDto> pageInfoDto, BindingResult result) {
-        log.info("get all orders with pagination, pageInfoDto:{}, result:{}", pageInfoDto, result);
+    public PageInfo<OrderVo> getAllOrdersWithPagination(@Validated PageInfo<OrderVo> pageInfo, @Valid OrderVo orderVo, BindingResult result) {
+        log.info("Start get all orders with pagination, pageInfo:{}, orderVo:{}, result:{}", pageInfo, orderVo, result);
         if (result.hasErrors()) {
-            throw new MethodArgumentNotValidException(null, result);
+            Map<String, String> errors = new HashMap<>();
+            result.getFieldErrors().forEach(error -> {
+                errors.put(error.getField(), error.getDefaultMessage());
+            });
+            log.error("validation error :{}", errors);
+            return null;
         }
-        PageInfo<OrderDto> allOrdersWithPagination = orderService.getAllOrdersWithPagination(pageInfoDto);
-        return allOrdersWithPagination;
+        PageInfoDto<OrderDto> pageInfoDto = new PageInfoDto<>();
+        pageInfoDto.setPageNumber(pageInfo.getPageNumber());
+        pageInfoDto.setPageSize(pageInfo.getPageSize());
+        pageInfoDto.setQuery(orderMapStruct.orderVoToOrderDto(orderVo));
+
+        PageInfo<OrderDto> orderDtoPageInfo = orderService.getAllOrdersWithPagination(pageInfoDto);
+        return orderMapStruct.orderDtoPageInfoToOrderVoPageInfo(orderDtoPageInfo);
     }
 
     @PutMapping
-    public ResponseEntity<?> update(@Validated @RequestBody OrderDto orderDto, BindingResult result) {
-        log.info("update order: {}", orderDto);
+    public OrderVo update(@Validated @RequestBody OrderVo orderVo, BindingResult result) {
+        log.info("update order: {}, result:{}", orderVo, result);
         if (result.hasErrors()) {
             throw new MethodArgumentNotValidException(null, result);
         }
-        orderService.update(orderDto);
-        return new ResponseEntity<>(HttpStatus.OK);
+        orderService.update(orderMapStruct.orderVoToOrderDto(orderVo));
+        return orderVo;
     }
 
+
     @DeleteMapping("/{orderId}")
-    public ResponseEntity<Void> delete(@PathVariable String orderId) {
+    public ResponseEntity<Void> delete(@PathVariable String orderId){
         log.info("delete order by id: {}", orderId);
         orderService.delete(orderId);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
-    @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<Map<String, String>> handleValidationExceptions(MethodArgumentNotValidException ex) {
-        Map<String, String> errors = new HashMap<>();
-        ex.getBindingResult().getAllErrors().forEach((error) -> {String fieldName = ((FieldError) error).getField();String errorMessage = error.getDefaultMessage();errors.put(fieldName, errorMessage);});return ResponseEntity.badRequest().body(errors);}
 }

@@ -33,5 +33,5 @@
     </update>
     <delete id="delete" parameterType="String">
         DELETE FROM TBL_users WHERE user_id = #{userId}
-    </select>
+    </delete>
 </mapper>
