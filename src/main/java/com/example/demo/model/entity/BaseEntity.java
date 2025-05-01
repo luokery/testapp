@@ -4,6 +4,7 @@ import jakarta.persistence.Column;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.MappedSuperclass;
+import lombok.EqualsAndHashCode;
 import lombok.Data;
 
 import java.sql.Timestamp;
@@ -11,6 +12,7 @@ import java.sql.Timestamp;
 /**
  * Base Entity Class
  */
+@EqualsAndHashCode(callSuper = true)
 @Data
 @MappedSuperclass
 public class BaseEntity {
@@ -26,4 +28,10 @@ public class BaseEntity {
      */
     @Column(name = "update_time", columnDefinition = "更新时间")
     private Timestamp updateTime;
+    
+    /**
+     * Record status, such as: 'ACTIVE', 'DELETED'
+     */
+    @Column(name = "record_status", columnDefinition = "记录状态")
+    private String recordStatus;
 }

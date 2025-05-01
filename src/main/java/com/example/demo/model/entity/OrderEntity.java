@@ -1,6 +1,8 @@
 package com.example.demo.model.entity;
 
-import jakarta.persistence.*;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
@@ -11,6 +13,7 @@ import java.math.BigDecimal;
  */
 @Data
 @EqualsAndHashCode(callSuper = true)
+
 @Entity
 @Table(name = "TBL_orders")
 public class OrderEntity extends BaseEntity {
@@ -19,13 +22,13 @@ public class OrderEntity extends BaseEntity {
      */
     @Id
     @Column(name = "order_id", columnDefinition = "订单ID，主键")
-    private Long orderId;
+    private String orderId;
 
     /**
      * User ID (foreign key to TBL_users)
      */
     @Column(name = "user_id", columnDefinition = "用户ID，外键")
-    private Long userId;
+    private String userId;
 
     /**
      * Order total price

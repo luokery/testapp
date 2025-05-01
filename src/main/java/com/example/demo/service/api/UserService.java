@@ -1,17 +1,15 @@
 package com.example.demo.service.api;
 
 import com.example.demo.model.dto.UserDto;
-import java.util.List;
+import com.example.demo.model.dto.PageInfoDto;
+import com.example.demo.model.vo.PageInfo;
 
 /**
  * UserService interface for managing user-related operations.
  */
-public interface UserService {
+public interface UserService extends BaseService<UserDto> {
 
-    /**
-     * Retrieves all users from the system.
-     *
-     * @return A list of UserEntity objects representing all users.
-     */
-    List<UserDto> getAllUsers();
+    PageInfo<UserDto> getAllUsersWithPagination(PageInfoDto<UserDto> pageInfoDto);
+
+
 }

@@ -1,15 +1,19 @@
 package com.example.demo.model.dto;
 
+import jakarta.validation.constraints.*;
 import lombok.Data;
 
-/**
- * User data transfer object (DTO)
- * User DTO
- */
 @Data
 public class UserDto extends BaseDto{
-    private Long userId;
+    @NotNull(message = "userId can not be null")
+    @Size(max = 50, message = "userId max length is 50")
+    private String userId;
+
+    @NotNull(message = "userName can not be null")
+    @Size(max = 50, message = "userName max length is 50")
     private String userName;
+    @NotNull(message = "password can not be null")
+    @Size(max = 50, message = "password max length is 50")
     private String password;
 
 }

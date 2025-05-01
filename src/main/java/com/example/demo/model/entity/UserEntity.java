@@ -2,6 +2,8 @@ package com.example.demo.model.entity;
 
 import jakarta.persistence.*;
 import lombok.Data;
+import lombok.NoArgsConstructor;
+
 import lombok.EqualsAndHashCode;
 
 /**
@@ -10,6 +12,8 @@ import lombok.EqualsAndHashCode;
 @Data
 @EqualsAndHashCode(callSuper = true)
 @Entity
+
+@NoArgsConstructor
 @Table(name = "TBL_users")
 public class UserEntity extends BaseEntity {
 
@@ -18,7 +22,7 @@ public class UserEntity extends BaseEntity {
      */
     @Id
     @Column(name = "user_id", columnDefinition = "用户id，主键")
-    private Long userId;
+    private String userId;
 
     /**
      * User name
