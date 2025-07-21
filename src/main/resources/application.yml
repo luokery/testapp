@@ -62,3 +62,13 @@ druid:
       log4j:
         enabled: false
     aop-patterns: com.example.demo.service.*
+    ##数据初始化设置
+    #表明使用的数据库平台是h2 mysql
+    platform: h2
+    #进行该配置后，每次启动程序，程序都会运行(表结构) 
+    #always为始终执行初始化，embedded只初始化内存数据库(默认值),如h2等，never为不执行初始化
+    initialization-mode: always
+    sql-script-encoding: utf-8
+    schema-locations: classpath:db/schema-h2.sql
+    #进行该配置后，每次启动程序，程序都会运行(数据)
+    data-locations: classpath:db/data-h2.sql
