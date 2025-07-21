@@ -15,15 +15,11 @@ import java.util.List;
 @Component
 @Mapper(componentModel = "spring")
 public interface UserMapStruct {
-    @Mappings({
-            @Mapping(source = "content", target = "content")
-    })
-    abstract PageInfo<UserVo> userDtoPageInfoToUserVoPageInfo(PageInfo<UserDto> userDtoPageInfo);
+    public abstract PageInfo<UserVo> userDtoPageInfoToUserVoPageInfo(PageInfo<UserDto> userDtoPageInfo);
     @InheritInverseConfiguration
-    abstract PageInfo<UserDto> userVoPageInfoToUserDtoPageInfo(PageInfo<UserVo> userVoPageInfo);
-    abstract UserDto userVoToUserDto(UserVo userVo);
+    public abstract PageInfo<UserDto> userVoPageInfoToUserDtoPageInfo(PageInfo<UserVo> userVoPageInfo);
+    public abstract UserDto userVoToUserDto(UserVo userVo);
     @InheritInverseConfiguration
-    abstract UserVo userDtoToUserVo(UserDto userDto);
     public abstract UserVo userDtoToUserVo(UserDto userDto);
 
     public abstract List<UserVo> userDtoListToUserVoList(List<UserDto> userDtos);
@@ -31,4 +27,6 @@ public interface UserMapStruct {
     public abstract UserDto userEntityToUserDto(UserEntity userEntity);
 
     public abstract List<UserDto> userEntityListToUserDtoList(List<UserEntity> userEntities);
+    
+	public abstract UserEntity dtoToEntity(UserDto queryDto);
 }

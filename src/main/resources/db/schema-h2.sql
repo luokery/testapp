@@ -36,7 +36,7 @@ CREATE TABLE TBL_orders (
     -- Creation time, cannot be null
     create_time TIMESTAMP NOT NULL COMMENT 'Creation Time',
     -- Update time
-    update_time TIMESTAMP COMMENT 'Update Time'
+    update_time TIMESTAMP COMMENT 'Update Time',
     -- Record status
     record_status VARCHAR(50) COMMENT 'Record Status'
 );

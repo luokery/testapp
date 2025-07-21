@@ -15,16 +15,17 @@ import lombok.extern.slf4j.Slf4j;
 import java.util.concurrent.atomic.AtomicLong;
 
 import java.util.stream.Collectors;
-import org.slf4j.Logger;
+
+import org.apache.ibatis.session.RowBounds;
 import java.util.*;
 
 /**
  * This class provides the implementation for the UserService interface.
  */
 @Service
+@Slf4j
 public class UserServiceImpl implements UserService, BaseService<UserDto> {
     
-    @Slf4j
     @Autowired
     private UserDao userDao;
 
@@ -44,36 +45,42 @@ public class UserServiceImpl implements UserService, BaseService<UserDto> {
     @Override
     public UserDto getById(String userId) {
         log.info("Retrieving user by ID: {}", userId);
-        UserEntity userEntity = userDao.getUserById(userId);
+        UserEntity userEntity = userDao.getById(userId);
         log.debug("Found user: {}", userEntity);
         return userMapStruct.userEntityToUserDto(userEntity);
     }
 
     @Override
     public PageInfo<UserDto> getAllUsersWithPagination(PageInfoDto<UserDto> pageInfoDto) {
-        log.info("Starting to get all users with pagination - Page: {}, Size: {}, Query: {}", pageInfoDto.getPageNumber(), pageInfoDto.getPageSize(), pageInfoDto.getQuery());
+        log.info("Starting to get all users with pagination - Page: {}, Size: {}, Query: {}", pageInfoDto.getPageNumber(), pageInfoDto.getPageSize(), pageInfoDto.getParamModel());
         int pageNumber = pageInfoDto.getPageNumber();
         int pageSize = pageInfoDto.getPageSize();
-        UserDto queryDto = pageInfoDto.getQuery();
+        UserDto queryDto = pageInfoDto.getParamModel();
 
-        UserEntity queryEntity = queryDto != null ? userMapStruct.userDtoToUserEntity(queryDto) : null;
-        List<UserEntity> userEntities = userDao.getAllUsersWithPagination((pageNumber - 1) * pageSize, pageSize, queryEntity);
-        List<UserDto> userDtos = userEntities.stream()
-                .map(userMapStruct::userEntityToUserDto)
-                .collect(Collectors.toList());
-        PageInfo<UserDto> pageInfo = new PageInfo<>();
+        UserEntity queryEntity = queryDto != null ? userMapStruct.dtoToEntity(queryDto) : null;
+        RowBounds rowBounds = new RowBounds((pageNumber - 1) * pageSize, pageSize);
+        List<UserEntity> userEntities = userDao.getAllsWithPagination(queryEntity, rowBounds);
+        List<UserDto> userDtos = userMapStruct.userEntityListToUserDtoList(userEntities);
+        
+        long totalElements = userDao.queryCount(queryEntity);
+        
+		// 计算出总页数
+        long totalPages = (totalElements + pageSize - 1) / pageSize;
+        
+        PageInfo<UserDto> pageInfo = new PageInfo<UserDto>(pageNumber, pageSize, totalElements, pageSize, null, null);
         pageInfo.setPageNumber(pageNumber);
-        int totalElements = userDao.getAllUsersWithPagination(0, Integer.MAX_VALUE, queryEntity).size();
         pageInfo.setPageSize(pageSize);
-        pageInfo.setTotalElements(userDao.getAll().size()); // Total count
-        pageInfo.setContent(userDtos);
+        pageInfo.setTotalElements(totalElements); // Total count
+        pageInfo.setTotalPages(totalPages);
+        pageInfo.setParamModel(queryDto);
+        pageInfo.setResultDatas(userDtos);
         return pageInfo;
     }
-    private static final Logger logger = LoggerFactory.getLogger(UserServiceImpl.class);
-     @Override
+    
+    @Override
     public void insert(UserDto userDto) {
-        logger.info("Inserting new user: {}", userDto);
-        UserEntity userEntity = userMapStruct.userDtoToUserEntity(userDto);
+    	log.info("Inserting new user: {}", userDto);
+        UserEntity userEntity = userMapStruct.dtoToEntity(userDto);
         if (userEntity.getUserId() == null) {
             userEntity.setUserId(getNextUserId());
         }
@@ -84,8 +91,8 @@ public class UserServiceImpl implements UserService, BaseService<UserDto> {
     @Override
     public void update(UserDto userDto) {
         log.info("Updating user: {}", userDto);
-        UserEntity userEntity = userMapStruct.userDtoToUserEntity(userDto);
-        userDao.updateUser(userEntity);
+        UserEntity userEntity = userMapStruct.dtoToEntity(userDto);
+        userDao.update(userEntity);
     }
 
     @Override

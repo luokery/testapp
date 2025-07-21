@@ -1,16 +1,17 @@
 package com.example.demo.model.vo;
 
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.Positive;
 import java.util.List;
 
 @Data
+@NoArgsConstructor
 @AllArgsConstructor
-
 public class PageInfo<T> {
 
     @Positive(message = "pageNumber must be greater than 0")
@@ -21,7 +22,11 @@ public class PageInfo<T> {
     @Min(value = 0, message = "totalElements cannot be less than 0")
     private long totalElements;
     @Min(value = 0, message = "totalPages cannot be less than 0")
-    private int totalPages;
-    private List<T> content;
-
+    private long totalPages;
+    
+    @Valid
+    private T paramModel;
+    
+    @Valid
+    private List<T> resultDatas = null;
 }

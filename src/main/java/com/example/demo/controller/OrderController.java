@@ -3,7 +3,7 @@ package com.example.demo.controller;
 import com.example.demo.model.dto.OrderDto;
 import com.example.demo.model.dto.PageInfoDto;
 import com.example.demo.model.vo.PageInfo;
-import com.example.demo.model.vo.OrderVo;
+import com.example.demo.model.vo.order.OrderVo;
 import com.example.demo.mapstruct.OrderMapStruct;
 import com.example.demo.service.api.OrderService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,6 +13,8 @@ import org.springframework.validation.BindingResult;
 
 import org.springframework.validation.annotation.Validated;
 import java.util.HashMap;
+
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.*;
 import java.util.Map;
 
@@ -82,17 +84,30 @@ public class OrderController {
         PageInfoDto<OrderDto> pageInfoDto = new PageInfoDto<>();
         pageInfoDto.setPageNumber(pageInfo.getPageNumber());
         pageInfoDto.setPageSize(pageInfo.getPageSize());
-        pageInfoDto.setQuery(orderMapStruct.orderVoToOrderDto(orderVo));
+        pageInfoDto.setParamModel(orderMapStruct.orderVoToOrderDto(orderVo));
 
         PageInfo<OrderDto> orderDtoPageInfo = orderService.getAllOrdersWithPagination(pageInfoDto);
-        return orderMapStruct.orderDtoPageInfoToOrderVoPageInfo(orderDtoPageInfo);
+        
+        PageInfo<OrderVo> pageResultVo = new PageInfo<OrderVo>();
+        pageResultVo.setPageNumber(pageInfo.getPageNumber());
+        pageResultVo.setPageSize(pageInfo.getPageSize());
+        pageResultVo.setParamModel(orderVo);
+        
+        pageResultVo.setResultDatas(orderMapStruct.orderDtoListToOrderVoList(orderDtoPageInfo.getResultDatas()));
+        
+        return pageResultVo;
     }
 
     @PutMapping
     public OrderVo update(@Validated @RequestBody OrderVo orderVo, BindingResult result) {
         log.info("update order: {}, result:{}", orderVo, result);
         if (result.hasErrors()) {
-            throw new MethodArgumentNotValidException(null, result);
+            Map<String, String> errors = new HashMap<>();
+            result.getFieldErrors().forEach(error -> {
+                errors.put(error.getField(), error.getDefaultMessage());
+            });
+            log.error("validation error :{}", errors);
+            return null;
         }
         orderService.update(orderMapStruct.orderVoToOrderDto(orderVo));
         return orderVo;

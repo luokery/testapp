@@ -1,7 +1,8 @@
 package com.example.demo.dao;
 
-import lombok.extern.slf4j.Slf4j;
 import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Param;
+import org.apache.ibatis.session.RowBounds;
 
 import java.util.List;
 
@@ -12,4 +13,8 @@ public interface BaseDao<T> {
     void insert(T entity);
     void update(T entity);
     void delete(String id);
+    
+	long queryCount(@Param("entity") T entity);
+	
+	List<T> getAllsWithPagination(@Param("entity") T entity, RowBounds rowBounds);
 }

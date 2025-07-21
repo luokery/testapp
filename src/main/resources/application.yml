@@ -10,8 +10,14 @@ spring:
     driver-class-name: org.h2.Driver
   sql:
     init:
+      # ALWAYS 始终, EMBEDDED仅嵌入式, NEVER 从不 
       mode: always
-      schema-locations: classpath:db/schema.sql
+      separator: ;
+      encoding: UTF-8
+      # 数据脚本平台: 模式-${Platform}; 默认是schema和data,当设置h2时加载schema,data, schema-h2和data-h2这4个sql;另:当设置schema和data脚本的时候, platform失效
+      platform: h2
+      #schema-locations: classpath:db/schema.sql
+      #data-locations: classpath:db/data.sql
   jpa:
     hibernate:
       ddl-auto: none

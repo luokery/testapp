@@ -11,7 +11,6 @@ import com.example.demo.service.api.BaseService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import com.github.pagehelper.PageHelper;
 
 import java.util.stream.Collectors;
 import java.math.BigDecimal;
@@ -24,7 +23,6 @@ import java.util.concurrent.atomic.AtomicLong;
 @Slf4j
 @Service
 public class OrderServiceImpl implements OrderService, BaseService<OrderDto> {
-
 
     @Autowired
     private OrderDao orderDao;
@@ -53,7 +51,6 @@ public class OrderServiceImpl implements OrderService, BaseService<OrderDto> {
         return orderMapStruct.orderEntityToOrderDto(order);
     }
 
-    @Override
     @Override
     public OrderDto getById(String orderId) {
         log.info("Getting order by orderId: {}", orderId);
@@ -105,7 +102,7 @@ public class OrderServiceImpl implements OrderService, BaseService<OrderDto> {
 
         int pageNumber = pageInfoDto.getPageNumber();
         int pageSize = pageInfoDto.getPageSize();
-        OrderDto orderDto = pageInfoDto.getQuery();
+        OrderDto orderDto = pageInfoDto.getParamModel();
 
         // 将 OrderDto 转换为 OrderEntity
         OrderEntity orderEntity = null;
@@ -114,7 +111,14 @@ public class OrderServiceImpl implements OrderService, BaseService<OrderDto> {
         }
         List<OrderEntity> orderEntities = orderDao.getAllOrdersWithPagination(orderEntity, pageNumber, pageSize);
         List<OrderDto> orderDtos = orderEntities.stream().map(orderMapStruct::orderEntityToOrderDto).collect(Collectors.toList());
-        return new PageInfo<>(pageNumber, pageSize, orderDao.countByEntity(orderEntity), orderDtos);
+        
+        long totalElements = orderDao.queryCount(orderEntity);
+		// 计算出总页数
+        long totalPages = (totalElements + pageSize - 1) / pageSize;
+        
+        PageInfo<OrderDto> PageInfo = new PageInfo<>(pageNumber, pageSize, totalElements, totalPages, orderDto, orderDtos);
+        
+        return PageInfo;
     }
 
     private String getNextOrderId() {

@@ -12,7 +12,7 @@ import java.sql.Timestamp;
 /**
  * Base Entity Class
  */
-@EqualsAndHashCode(callSuper = true)
+@EqualsAndHashCode
 @Data
 @MappedSuperclass
 public class BaseEntity {
